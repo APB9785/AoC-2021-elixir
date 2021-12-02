@@ -25,3 +25,6 @@ advent_2021-*.tar
 
 # Temporary files for e.g. tests
 /tmp
+
+# Puzzle inputs
+/priv/
