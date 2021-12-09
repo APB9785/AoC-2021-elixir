@@ -28,3 +28,6 @@ advent_2021-*.tar
 
 # Puzzle inputs
 /priv/
+
+# Unfinished puzzles
+day_08.ex
