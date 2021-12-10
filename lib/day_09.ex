@@ -15,18 +15,6 @@ defmodule Day09 do
     |> map_grid()
   end
 
-  def part_1 do
-    grid = parse_input()
-
-    Enum.reduce(grid, 0, fn {coord, height}, score ->
-      if is_low?(coord, height, grid) do
-        score + 1 + height
-      else
-        score
-      end
-    end)
-  end
-
   defp map_grid(list_of_lists, y \\ 0, acc \\ %{})
 
   defp map_grid([], _, acc), do: acc
@@ -41,6 +29,18 @@ defmodule Day09 do
   defp map_row([h | t], x, y, acc) do
     acc = Map.put(acc, {x, y}, h)
     map_row(t, x + 1, y, acc)
+  end
+
+  def part_1 do
+    grid = parse_input()
+
+    Enum.reduce(grid, 0, fn {coord, height}, score ->
+      if is_low?(coord, height, grid) do
+        score + 1 + height
+      else
+        score
+      end
+    end)
   end
 
   defp is_low?(coord, current, map) do
