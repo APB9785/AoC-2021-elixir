@@ -2,7 +2,16 @@ defmodule Day12 do
   @moduledoc false
 
   defmodule State do
-    defstruct [:seen, :current]
+    defstruct [:seen, :current, :seconds_allowed?, :part]
+
+    def new(part) do
+      %__MODULE__{
+        current: {"start", :small},
+        seen: MapSet.new(["start"]),
+        seconds_allowed?: part == 2,
+        part: part
+      }
+    end
   end
 
   @path Application.app_dir(:advent_2021, "priv/day_12_input.txt")
@@ -39,9 +48,16 @@ defmodule Day12 do
 
   def part_1 do
     caves_map = parse_input()
-    init_states = [%State{current: {"start", :small}, seen: MapSet.new(["start"])}]
+    init_state = State.new(1)
 
-    travel_caves(init_states, caves_map)
+    travel_caves([init_state], caves_map)
+  end
+
+  def part_2 do
+    caves_map = parse_input()
+    init_state = State.new(2)
+
+    travel_caves([init_state], caves_map)
   end
 
   defp travel_caves(states, map, path_count \\ 0)
@@ -73,12 +89,23 @@ defmodule Day12 do
 
   defp make_new_state({name, size} = next, root) do
     cond do
+      root.part == 2 and name == "start" ->
+        # Cannot re-visit start in part 2
+        nil
+
       size == :big ->
+        # Big rooms have no limitations
         Map.put(root, :current, next)
 
       MapSet.member?(root.seen, name) ->
-        # Already been to this room
-        nil
+        # Already been to this (small) room
+        if root.seconds_allowed? do
+          root
+          |> Map.put(:current, next)
+          |> Map.put(:seconds_allowed?, false)
+        else
+          nil
+        end
 
       :otherwise ->
         root
