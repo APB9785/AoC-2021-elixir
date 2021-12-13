@@ -2,6 +2,10 @@ defmodule Day12 do
   @moduledoc false
 
   defmodule State do
+    @moduledoc """
+    Stores current location and history for each path in our BFS.  The other
+    two keys are flags to use different logic for part 2.
+    """
     defstruct [:seen, :current, :seconds_allowed?, :part]
 
     def new(part) do
