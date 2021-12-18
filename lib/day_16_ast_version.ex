@@ -24,9 +24,9 @@ defmodule Day16AST do
     {literal, rest}
   end
 
-  defp make_ast(<<_version::3, type_id::3, 0::1, len::15, rest::bitstring>>) do
-    <<values::bitstring-size(len), rest::bitstring>> = rest
-
+  defp make_ast(
+         <<_version::3, type_id::3, 0::1, len::15, values::bitstring-size(len), rest::bitstring>>
+       ) do
     ast =
       values
       |> parse_values()
@@ -72,30 +72,21 @@ defmodule Day16AST do
 
   defp ast_helper(values, type_id) do
     case type_id do
-      0 -> ast_reduce(values, 0, :+)
-      1 -> ast_reduce(values, 1, :*)
-      2 -> ast_reduce(values, :infinity, :min)
-      3 -> ast_reduce(values, 0, :max)
+      0 -> quote(do: Enum.sum(unquote(values)))
+      1 -> quote(do: Enum.product(unquote(values)))
+      2 -> quote(do: Enum.min(unquote(values)))
+      3 -> quote(do: Enum.max(unquote(values)))
       5 -> ast_if(values, :>)
       6 -> ast_if(values, :<)
       7 -> ast_if(values, :==)
     end
   end
 
-  defp ast_reduce(values, init_acc, op) do
-    {{:., [], [{:__aliases__, [alias: false], [:Enum]}, :reduce]}, [],
-     [
-       values,
-       init_acc,
-       {:&, [import: Kernel, context: Elixir],
-        [
-          {:/, [context: Elixir, import: Kernel], [{op, [if_undefined: :apply], Elixir}, 2]}
-        ]}
-     ]}
-  end
-
-  defp ast_if(values, op) do
-    {:if, [context: Elixir, import: Kernel],
-     [{op, [context: Elixir, import: Kernel], values}, [do: 1, else: 0]]}
+  defp ast_if([a, b], op) do
+    quote do
+      if unquote(op)(unquote(a), unquote(b)),
+        do: 1,
+        else: 0
+    end
   end
 end

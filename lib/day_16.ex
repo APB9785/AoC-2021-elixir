@@ -42,9 +42,9 @@ defmodule Day16 do
     {packet, rest}
   end
 
-  def parse(<<version::3, type_id::3, 0::1, len::15, rest::bitstring>>) do
-    <<values::bitstring-size(len), rest::bitstring>> = rest
-
+  def parse(
+        <<version::3, type_id::3, 0::1, len::15, values::bitstring-size(len), rest::bitstring>>
+      ) do
     packet = %Packet{
       version: version,
       type_id: type_id,
@@ -61,12 +61,10 @@ defmodule Day16 do
         {[packet | acc], rest}
       end)
 
-    values = Enum.reverse(values)
-
     packet = %Packet{
       version: version,
       type_id: type_id,
-      value: values
+      value: Enum.reverse(values)
     }
 
     {packet, rest}
