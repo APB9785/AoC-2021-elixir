@@ -19,9 +19,9 @@ defmodule Day16AST do
   defp make_ast(<<_version::3, 4::3, rest::bitstring>>) do
     {value, rest} = parse_literal(rest)
     pad_length = 8 - rem(bit_size(value), 8)
-    ast = :binary.decode_unsigned(<<0::size(pad_length), value::bitstring>>)
+    literal = :binary.decode_unsigned(<<0::size(pad_length), value::bitstring>>)
 
-    {ast, rest}
+    {literal, rest}
   end
 
   defp make_ast(<<_version::3, type_id::3, 0::1, len::15, rest::bitstring>>) do
@@ -82,10 +82,10 @@ defmodule Day16AST do
     end
   end
 
-  defp ast_reduce(parsed_values, init_acc, op) do
+  defp ast_reduce(values, init_acc, op) do
     {{:., [], [{:__aliases__, [alias: false], [:Enum]}, :reduce]}, [],
      [
-       parsed_values,
+       values,
        init_acc,
        {:&, [import: Kernel, context: Elixir],
         [
@@ -94,8 +94,8 @@ defmodule Day16AST do
      ]}
   end
 
-  defp ast_if(parsed_values, op) do
+  defp ast_if(values, op) do
     {:if, [context: Elixir, import: Kernel],
-     [{op, [context: Elixir, import: Kernel], parsed_values}, [do: 1, else: 0]]}
+     [{op, [context: Elixir, import: Kernel], values}, [do: 1, else: 0]]}
   end
 end
