@@ -28,15 +28,9 @@ defmodule Day16AST do
     <<values::bitstring-size(len), rest::bitstring>> = rest
 
     ast =
-      case type_id do
-        0 -> values |> parse_values() |> ast_reduce(0, :+)
-        1 -> values |> parse_values() |> ast_reduce(1, :*)
-        2 -> values |> parse_values() |> ast_reduce(:infinity, :min)
-        3 -> values |> parse_values() |> ast_reduce(0, :max)
-        5 -> values |> parse_values() |> ast_if(:>)
-        6 -> values |> parse_values() |> ast_if(:<)
-        7 -> values |> parse_values() |> ast_if(:==)
-      end
+      values
+      |> parse_values()
+      |> ast_helper(type_id)
 
     {ast, rest}
   end
@@ -44,22 +38,14 @@ defmodule Day16AST do
   defp make_ast(<<_version::3, type_id::3, 1::1, qty::11, rest::bitstring>>) do
     {values, rest} =
       Enum.reduce(1..qty, {[], rest}, fn _, {acc, rest} ->
-        {packet, rest} = make_ast(rest)
-        {[packet | acc], rest}
+        {ast, rest} = make_ast(rest)
+        {[ast | acc], rest}
       end)
 
-    values = Enum.reverse(values)
-
     ast =
-      case type_id do
-        0 -> ast_reduce(values, 0, :+)
-        1 -> ast_reduce(values, 1, :*)
-        2 -> ast_reduce(values, :infinity, :min)
-        3 -> ast_reduce(values, 0, :max)
-        5 -> ast_if(values, :>)
-        6 -> ast_if(values, :<)
-        7 -> ast_if(values, :==)
-      end
+      values
+      |> Enum.reverse()
+      |> ast_helper(type_id)
 
     {ast, rest}
   end
@@ -82,6 +68,18 @@ defmodule Day16AST do
     {ast, rest} = make_ast(values_bin)
 
     parse_values(rest, [ast | acc])
+  end
+
+  defp ast_helper(values, type_id) do
+    case type_id do
+      0 -> ast_reduce(values, 0, :+)
+      1 -> ast_reduce(values, 1, :*)
+      2 -> ast_reduce(values, :infinity, :min)
+      3 -> ast_reduce(values, 0, :max)
+      5 -> ast_if(values, :>)
+      6 -> ast_if(values, :<)
+      7 -> ast_if(values, :==)
+    end
   end
 
   defp ast_reduce(parsed_values, init_acc, op) do
